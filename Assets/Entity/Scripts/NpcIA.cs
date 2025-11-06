@@ -7,16 +7,20 @@ public enum NpcState
     PATROL,
     ATTENTION,
     FOLLOW,
-    CAPTURING
+    CAPTURING,
+    STUNNED
 }
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class NpcIA : MonoBehaviour
 {
+    private static readonly WaitForSeconds _waitForSeconds0_1 = new(0.1f);
     private Rigidbody2D rig;
     private PlayerController player;
     private Vector2 lookDirection;
     private Coroutine attentionRoutine;
+    private Vector3 distractionTarget;
+    private bool isDistractionFollow = false;
 
     [Header("General settings")]
     [SerializeField] private NpcState currentState;
@@ -93,6 +97,9 @@ public class NpcIA : MonoBehaviour
                 player.enabled = false;
                 Invoke(nameof(Reset), 5f);
                 break;
+            case NpcState.STUNNED:
+                sr.color = Color.gray;
+                break;
             default:
                 Debug.LogWarning($"Estado não suportado: {currentState}");
                 break;
@@ -138,54 +145,114 @@ public class NpcIA : MonoBehaviour
         }
     }
 
-    private IEnumerator AttentionTimer()
+    private IEnumerator AttentionTimer(bool fromSound = false)
     {
         yield return new WaitForSeconds(attentionTime);
-        currentState = CanSeePlayer() ? NpcState.FOLLOW : NpcState.PATROL;
+    
+        if (CanSeePlayer())
+        {
+            isDistractionFollow = false;
+            currentState = NpcState.FOLLOW;
+        }
+        else if (fromSound)
+        {
+            isDistractionFollow = true;
+            currentState = NpcState.FOLLOW;
+            TryRecalculatePath(distractionTarget); 
+        }
+        else
+        {
+            currentState = NpcState.PATROL;
+        }
         attentionRoutine = null;
     }
 
     private void HandleFollow()
     {
-        if (!CanSeePlayer())
+        if (CanSeePlayer())
         {
-            currentState = NpcState.ATTENTION;
-            rig.linearVelocity = Vector2.zero;
-            return;
+            isDistractionFollow = false;
         }
 
-        if (Vector3.Distance(transform.position, player.transform.position) < destinationTolerance * 2f)
+        Vector3 currentTarget;
+        if (isDistractionFollow)
         {
-            currentState = NpcState.CAPTURING;
-            rig.linearVelocity = Vector2.zero;
-            return;
+            currentTarget = distractionTarget;
         }
-
-        timer += Time.fixedDeltaTime;
-
-        float playerMovementSqr = (player.transform.position - (Vector3)lastPlayerPosition).sqrMagnitude;
-        bool playerMovedSignificantly = playerMovementSqr > 0.1f;
-
-        bool angleIsTooWide = false;
-        if (currentPath != null && currentPathIndex < currentPath.Count)
+        else
         {
-            Vector2 optimalDirection = GetPlayerVector().normalized;
-            Vector2 pathDirection = (currentPath[currentPathIndex] - transform.position).normalized;
-
-            float angleDifference = Vector2.Angle(optimalDirection, pathDirection);
-            angleIsTooWide = angleDifference > recalculateAngle;
-        }
-
-        bool shouldRecalculate = (currentPath == null) || (timer >= recalculateTime) || (angleIsTooWide && playerMovedSignificantly);
-        if (shouldRecalculate)
-        {
-            if (TryRecalculatePath(player.transform.position))
+            if (Vector3.Distance(transform.position, player.transform.position) < destinationTolerance * 2f)
             {
-                timer = 0f;
-                lastPlayerPosition = player.transform.position;
+                currentState = NpcState.CAPTURING;
+                rig.linearVelocity = Vector2.zero;
+                return;
+            }
+            currentTarget = player.transform.position;
+        }
+        
+        if (isDistractionFollow && Vector3.Distance(transform.position, currentTarget) < destinationTolerance)
+        {
+            currentState = NpcState.PATROL;
+            rig.linearVelocity = Vector2.zero;
+            return;
+        }
+
+        
+        if (!isDistractionFollow) 
+        {            
+            timer += Time.fixedDeltaTime;
+
+            float playerMovementSqr = (player.transform.position - (Vector3)lastPlayerPosition).sqrMagnitude;
+            bool playerMovedSignificantly = playerMovementSqr > 0.1f;
+            bool angleIsTooWide = false;
+            if (currentPath != null && currentPathIndex < currentPath.Count)
+            {
+                Vector2 optimalDirection = GetPlayerVector().normalized;
+                Vector2 pathDirection = (currentPath[currentPathIndex] - transform.position).normalized;
+
+                float angleDifference = Vector2.Angle(optimalDirection, pathDirection);
+                angleIsTooWide = angleDifference > recalculateAngle;
+            }
+
+            bool shouldRecalculate = (currentPath == null) || (timer >= recalculateTime) || (angleIsTooWide && playerMovedSignificantly);
+            
+            if (shouldRecalculate)
+            {
+                if (TryRecalculatePath(player.transform.position))
+                {
+                    timer = 0f;
+                    lastPlayerPosition = player.transform.position;
+                }
             }
         }
+        else
+        {
+            if (currentPath == null)
+            {
+                TryRecalculatePath(distractionTarget);
+            }
+        }
+        
         FollowCurrentPath(followMoveSpeed);
+    }
+
+    public void BecomeStunned(float stunTime)
+    {
+        currentState = NpcState.STUNNED;
+        StopAllCoroutines();
+        StartCoroutine(StunCoroutine(stunTime));
+    }
+    
+    private IEnumerator StunCoroutine(float stunTime)
+    {
+        float counter = 0;
+        while (counter <= stunTime)
+        {
+            rig.linearVelocity = Vector2.zero;
+            counter += 0.1f;
+            yield return _waitForSeconds0_1;
+        }
+        currentState = NpcState.PATROL;
     }
 
     private bool TryRecalculatePath(Vector3 targetPosition)
@@ -214,22 +281,49 @@ public class NpcIA : MonoBehaviour
         }
 
         Vector3 targetPoint = currentPath[currentPathIndex];
-        
+
         Vector2 direction = (targetPoint - transform.position).normalized;
         rig.linearVelocity = direction * moveSpeed;
 
-        lookDirection = direction; 
+        lookDirection = direction;
 
         if (Vector3.Distance(transform.position, targetPoint) < destinationTolerance)
         {
             currentPathIndex++;
-            
+
             if (currentPathIndex >= currentPath.Count)
             {
                 currentPath = null;
                 rig.linearVelocity = Vector2.zero;
             }
         }
+    }
+    
+    public void HearDistraction(Vector3 soundPosition)
+    {
+        // Se o NPC estiver atordoado, capturando, ou já seguindo o player, ignore o som.
+        if (currentState == NpcState.STUNNED || currentState == NpcState.CAPTURING || currentState == NpcState.FOLLOW)
+        {
+            return;
+        }
+
+        // Se o NPC estiver em ATTENTION ou PATROL, ele vai investigar
+        
+        // 1. Define o novo alvo
+        distractionTarget = soundPosition;
+        isDistractionFollow = true; // Estamos seguindo uma distração, não o player
+        
+        // 2. Transição para o estado ATTENTION para virar e ponderar.
+        currentState = NpcState.ATTENTION;
+        rig.linearVelocity = Vector2.zero; // Para imediatamente
+        
+        // 3. Cancela qualquer temporizador de atenção anterior.
+        if (attentionRoutine != null)
+        {
+            StopCoroutine(attentionRoutine);
+        }
+        
+        attentionRoutine = StartCoroutine(AttentionTimer(true));
     }
 
     private Vector2 GetPlayerVector()

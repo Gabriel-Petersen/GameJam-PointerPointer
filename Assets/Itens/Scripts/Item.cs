@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class Item : ScriptableObject
 {
-    public float evilness;
+    public int evilness;
     public bool causesSoundAlert;
     public float soundAlertRadius;
     public AudioClip soundAlert;
@@ -13,29 +13,27 @@ public abstract class Item : ScriptableObject
     public string itemName;
     public Sprite icon;
 
-    public abstract void PlaySound();
-    public static void PlayAllertSound (Item item)
+    public void PlaySound()
     {
-        if (item.causesSoundAlert && item.soundAlert != null)
+        if (causesSoundAlert && soundAlert != null)
         {
-            Debug.Log($"{item.itemName} fez barulho!");
+            Debug.Log($"{itemName} fez barulho!");
             // TODO: fazer o som tocar no jogo
         }
-        else if (item.causesSoundAlert && item.soundAlert == null)
+        else if (causesSoundAlert && soundAlert == null)
         {
-            Debug.LogWarning($"{item.itemName} era para causar som mas não há arquivo de áudio anexado");
+            Debug.LogWarning($"{itemName} era para causar som mas não há arquivo de áudio anexado");
         }
-        else if (!item.causesSoundAlert && item.soundAlert != null)
+        else if (!causesSoundAlert && soundAlert != null)
         {
-            Debug.LogWarning($"{item.itemName} possui arquivo de áudio anexado, mas não devia causar som");
+            Debug.LogWarning($"{itemName} possui arquivo de áudio anexado, mas não devia causar som");
         }
     }
 }
 
 public abstract class InteractableItem : Item
 {
-    public PlayerController player;
-    public abstract void UseItem();
+    public abstract bool TryUseItem(PlayerController player);
 }
 
 [System.Serializable]
