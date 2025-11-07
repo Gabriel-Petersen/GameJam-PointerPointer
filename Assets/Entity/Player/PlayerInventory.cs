@@ -3,10 +3,13 @@ using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
 {
+    [SerializeField] private HudController hudController;
+    [SerializeField] private HotBarController hotBarController;
+    [SerializeField] private InventoryManager inventoryController;
     public PlayerController Controller { private get; set; }
     public readonly Dictionary<Item, ItemStack> inventory = new();
     public readonly List<InteractableItem> hotBar = new();
-    private int hotBarIndex=0;
+    [HideInInspector] public int hotBarIndex=0;
     public InteractableItem CurrentItem
     {
         get
@@ -16,19 +19,33 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
+    public void Open()
+    {
+        hudController.gameObject.SetActive(false);
+        inventoryController.gameObject.SetActive(true);
+        inventoryController.OpenInventory();
+    }
+    
+    public void Close()
+    {
+        inventoryController.CloseInventory();
+        inventoryController.gameObject.SetActive(false);
+        hudController.gameObject.SetActive(true);
+    }
+
     public void ScrollItem(int direction)
     {
         if (hotBar.Count > 0)
         {
             hotBarIndex = (hotBarIndex + direction + hotBar.Count) % hotBar.Count;
-            // TODO: Atualizar UI da Hotbar
+            hotBarController.UpdateCurrentItem();
         }
     }
 
     public void CatchItem (Item newItem)
     {
-        Debug.Log("Adquirindo item novo: " + newItem.itemName);
-        newItem.PlaySound();
+        //Debug.Log("Adquirindo item novo: " + newItem.itemName);
+        newItem.PlaySound(Controller);
         if (inventory.ContainsKey(newItem))
         {
             inventory[newItem].AddItem(1);
@@ -38,22 +55,34 @@ public class PlayerInventory : MonoBehaviour
             inventory.Add(newItem, new(newItem, 1));
         }
 
-        if (newItem is not InteractableItem) return;
-        if (!hotBar.Contains(newItem as InteractableItem))
+        if (newItem is InteractableItem)
         {
-            hotBar.Add(newItem as InteractableItem);
+            if (!hotBar.Contains(newItem as InteractableItem))
+            {
+                hotBar.Add(newItem as InteractableItem);
+                hotBarController.UpdateHotBar();
+            }
+        }
+
+        if (newItem is StaticItem)
+        {
+            var item = newItem as StaticItem;
+            Controller.totalEvilness += item.evilness;
+            Controller.speedBonus -= item.wheight / 10.0f;
+            Controller.totalScore += item.scoreValue;
         }
     }
 
     public void UseSelectedItem ()
     {
+        if (Controller.inInventory) return;
         if (CurrentItem == null) return; 
 
         if (CurrentItem.TryUseItem(Controller))
         {
             Item usedItem = CurrentItem;
             inventory[usedItem].RemoveItem(1);
-            
+
             if (inventory[usedItem].amount == 0)
             {
                 inventory.Remove(usedItem);
@@ -61,8 +90,9 @@ public class PlayerInventory : MonoBehaviour
                 if (hotBar.Count > 0)
                     hotBarIndex %= hotBar.Count;
                 else
-                    hotBarIndex = 0; 
+                    hotBarIndex = 0;
             }
+            hotBarController.UpdateHotBar();
         }
     }
 }

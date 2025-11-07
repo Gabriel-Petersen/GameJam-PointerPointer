@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85dd728e1ba613540ab4a8e467c9cd83, type: 3}
+  m_Name: Garrafa
+  m_EditorClassIdentifier: 
+  causesSoundAlert: 0
+  soundAlertRadius: 0
+  soundAlert: {fileID: 0}
+  description: "Uma garrafa de pl\xE1stico. \xD3tima para arremessar e distrair inimigos!
+    Ainda mais se tiver restos de Dolly aqui dentro..."
+  itemName: "Garrafa de pl\xE1stico"
+  icon: {fileID: 21300000, guid: a336d720b9357ee43b1f75c251f1ed1d, type: 3}
+  shootOffset: 1
+  decelerationRate: 1
+  isCollidable: 1
+  speed: 8
+  maxDistance: 20
+  prefab: {fileID: 7549439145250907604, guid: dc719376444086b4b8ecfb27a3e5452c, type: 3}
+  collisionSound: {fileID: 0}
+  noiseRadius: 8

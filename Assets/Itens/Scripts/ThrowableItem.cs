@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewThrowableItem", menuName = "Item/Interactable/ThrowableItem")]
 public class ThrowableItem : InteractableItem
 {
+    [Space(5)]
     public float shootOffset;
     public float decelerationRate;
     public bool isCollidable;

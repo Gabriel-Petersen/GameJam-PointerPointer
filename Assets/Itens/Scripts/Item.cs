@@ -2,23 +2,21 @@ using UnityEngine;
 
 public abstract class Item : ScriptableObject
 {
-    public int evilness;
     public bool causesSoundAlert;
     public float soundAlertRadius;
     public AudioClip soundAlert;
-    public int maxStack;
 
     [TextArea]
     public string description;
     public string itemName;
     public Sprite icon;
 
-    public void PlaySound()
+    public void PlaySound(PlayerController player)
     {
         if (causesSoundAlert && soundAlert != null)
         {
             Debug.Log($"{itemName} fez barulho!");
-            // TODO: fazer o som tocar no jogo
+            AudioSource.PlayClipAtPoint(soundAlert, player.transform.position);
         }
         else if (causesSoundAlert && soundAlert == null)
         {
@@ -52,7 +50,7 @@ public class ItemStack
     public void AddItem(int qtd)
     {
         if (!isNull)
-            amount = (amount + qtd > item.maxStack) ? item.maxStack : amount + qtd;
+            amount += qtd;
     }
 
     public void RemoveItem(int qtd)

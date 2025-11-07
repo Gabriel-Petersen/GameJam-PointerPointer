@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewStunnableItem", menuName = "Item/Interactable/StunnableItem")]
 public class StunItem : InteractableItem
 {
+    [Space(5)]
     [SerializeField] private float actionRadius;
     [SerializeField] private float stunTime;
     [SerializeField] private float offset;

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58421e9b09a1b324cae9dbfb1b8c5895, type: 3}
+  m_Name: "Energ\xE9tico"
+  m_EditorClassIdentifier: 
+  causesSoundAlert: 0
+  soundAlertRadius: 0
+  soundAlert: {fileID: 0}
+  description: "O bom e velho monster. Ou ser\xE1 um suco de frutas Gummy? N\xE3o
+    importa. O importante \xE9 que fico mais r\xE1pido com isso!"
+  itemName: "Energ\xE9tico"
+  icon: {fileID: 21300000, guid: 7de55d16ea87f1c499da473daf9349a7, type: 3}
+  speedBonus: 1
+  speedupTime: 5

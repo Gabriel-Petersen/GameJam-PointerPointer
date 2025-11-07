@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public enum NpcState
@@ -18,8 +19,10 @@ public class NpcIA : MonoBehaviour
     private Rigidbody2D rig;
     private PlayerController player;
     private Vector2 lookDirection;
+    private TextMeshProUGUI stateTxt;
     private Coroutine attentionRoutine;
     private Vector3 distractionTarget;
+    private LegAnimator legAnimator;
     private bool isDistractionFollow = false;
 
     [Header("General settings")]
@@ -54,13 +57,16 @@ public class NpcIA : MonoBehaviour
     private int currentPathIndex;
     private int currentPatrolPointIndex;
 
-    private SpriteRenderer sr;
-
     void Awake()
     {
-        sr = GetComponent<SpriteRenderer>();
         rig = GetComponent<Rigidbody2D>();
         player = FindFirstObjectByType<PlayerController>();
+        legAnimator = GetComponentInChildren<LegAnimator>();
+        stateTxt = GetComponentInChildren<TextMeshProUGUI>();
+        if (legAnimator == null)
+        {
+            Debug.LogError($"Npc {name} não possui pernas");
+        }
         currentState = NpcState.PATROL;
         timer = 0;
     }
@@ -78,18 +84,18 @@ public class NpcIA : MonoBehaviour
 
     void FixedUpdate()
     {
+        Vector2 currentMoveDirection = rig.linearVelocity.normalized;
+        legAnimator.SetMovementState(rig.linearVelocity.magnitude);
+        stateTxt.text = currentState.ToString();
         switch (currentState)
         {
             case NpcState.PATROL:
-                sr.color = Color.green;
                 HandlePatrol();
                 break;
             case NpcState.ATTENTION:
-                sr.color = Color.yellow;
                 HandleAtention();
                 break;
             case NpcState.FOLLOW:
-                sr.color = Color.red;
                 HandleFollow();
                 break;
             case NpcState.CAPTURING:
@@ -98,11 +104,19 @@ public class NpcIA : MonoBehaviour
                 Invoke(nameof(Reset), 5f);
                 break;
             case NpcState.STUNNED:
-                sr.color = Color.gray;
                 break;
             default:
                 Debug.LogWarning($"Estado não suportado: {currentState}");
                 break;
+        }
+
+        if (rig.linearVelocity.sqrMagnitude > 0.01f) 
+        {
+            Vector2 targetDirection = lookDirection.normalized;
+            float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+            Quaternion targetRotation = Quaternion.Euler(new Vector3(0, 0, angle));
+            float rotationSpeed = 10f;
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
         }
     }
 
@@ -111,6 +125,8 @@ public class NpcIA : MonoBehaviour
         if (CanSeePlayer())
         {
             currentState = NpcState.ATTENTION;
+            isDistractionFollow = false; 
+
             attentionRoutine = StartCoroutine(AttentionTimer());
             rig.linearVelocity = Vector2.zero;
             return;
@@ -145,25 +161,15 @@ public class NpcIA : MonoBehaviour
         }
     }
 
-    private IEnumerator AttentionTimer(bool fromSound = false)
+    private IEnumerator AttentionTimer()
     {
         yield return new WaitForSeconds(attentionTime);
-    
+        
         if (CanSeePlayer())
-        {
-            isDistractionFollow = false;
             currentState = NpcState.FOLLOW;
-        }
-        else if (fromSound)
-        {
-            isDistractionFollow = true;
-            currentState = NpcState.FOLLOW;
-            TryRecalculatePath(distractionTarget); 
-        }
         else
-        {
             currentState = NpcState.PATROL;
-        }
+        
         attentionRoutine = null;
     }
 
@@ -190,9 +196,9 @@ public class NpcIA : MonoBehaviour
             currentTarget = player.transform.position;
         }
         
-        if (isDistractionFollow && Vector3.Distance(transform.position, currentTarget) < destinationTolerance)
+        if (isDistractionFollow && Vector3.Distance(transform.position, currentTarget) < 3*destinationTolerance)
         {
-            currentState = NpcState.PATROL;
+            currentState = NpcState.ATTENTION;
             rig.linearVelocity = Vector2.zero;
             return;
         }
@@ -301,29 +307,22 @@ public class NpcIA : MonoBehaviour
     
     public void HearDistraction(Vector3 soundPosition)
     {
-        // Se o NPC estiver atordoado, capturando, ou já seguindo o player, ignore o som.
         if (currentState == NpcState.STUNNED || currentState == NpcState.CAPTURING || currentState == NpcState.FOLLOW)
         {
             return;
         }
-
-        // Se o NPC estiver em ATTENTION ou PATROL, ele vai investigar
-        
-        // 1. Define o novo alvo
+        Debug.Log($"NPC {gameObject.name} ouviu uma distração em " + soundPosition);
         distractionTarget = soundPosition;
-        isDistractionFollow = true; // Estamos seguindo uma distração, não o player
+        isDistractionFollow = true; 
         
-        // 2. Transição para o estado ATTENTION para virar e ponderar.
-        currentState = NpcState.ATTENTION;
-        rig.linearVelocity = Vector2.zero; // Para imediatamente
-        
-        // 3. Cancela qualquer temporizador de atenção anterior.
+        currentState = NpcState.FOLLOW;
+        rig.linearVelocity = Vector2.zero;
+
         if (attentionRoutine != null)
         {
             StopCoroutine(attentionRoutine);
+            attentionRoutine = null;
         }
-        
-        attentionRoutine = StartCoroutine(AttentionTimer(true));
     }
 
     private Vector2 GetPlayerVector()
@@ -350,7 +349,7 @@ public class NpcIA : MonoBehaviour
         return false;
     }
     
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         if (!seeVision) return;
         Gizmos.color = Color.yellow;

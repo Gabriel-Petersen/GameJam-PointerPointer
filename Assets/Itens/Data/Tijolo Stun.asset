@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5286bb6e53a2a38408eb3b876648a11a, type: 3}
+  m_Name: Tijolo Stun
+  m_EditorClassIdentifier: 
+  causesSoundAlert: 1
+  soundAlertRadius: 3
+  soundAlert: {fileID: 0}
+  description: "Um tijolo grande. Grande demais para aremessar. Por\xE9m se eu rumar
+    na cabe\xE7a..."
+  itemName: Tijolo pequeno
+  icon: {fileID: 21300000, guid: 3386294446a48f7408a06555b1bfc28a, type: 3}
+  actionRadius: 0.6
+  stunTime: 6
+  offset: 1
+  npcLayer:
+    serializedVersion: 2
+    m_Bits: 128

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58421e9b09a1b324cae9dbfb1b8c5895, type: 3}
+  m_Name: "Rel\xF3gio"
+  m_EditorClassIdentifier: 
+  causesSoundAlert: 0
+  soundAlertRadius: 0
+  soundAlert: {fileID: 0}
+  description: "Virar o XLR8 n\xE3o parece m\xE1 ideia... Modo turbo!"
+  itemName: "Rel\xF3gio"
+  icon: {fileID: 21300000, guid: 4bc7be3f9db094b4a92c076b9c6d815c, type: 3}
+  speedBonus: 2.5
+  speedupTime: 5

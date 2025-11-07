@@ -8,21 +8,24 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     private PlayerInput input;
+    private LegAnimator legs;
     [HideInInspector] public PlayerInventory inventory;
     private Rigidbody2D rig;
 
     private Vector2 moveDir;
-    private float originalScaleX;
 
     [SerializeField] private float baseMoveSpeed;
     [SerializeField] private float interactionRadius;
     [SerializeField] private float interactionOffset;
     [SerializeField] private LayerMask interactionLayer;
+    [SerializeField] private int maxEvilQuantity;
     [HideInInspector] public float speedBonus;
 
+    public bool inInventory;
     public int totalEvilness;
+    public int MaxEvil { get; private set; }
     public int totalScore;
-    private float MoveSpeed
+    public float MoveSpeed
     {
         get
         {
@@ -31,13 +34,19 @@ public class PlayerController : MonoBehaviour
     }
     void Awake()
     {
-        originalScaleX = transform.localScale.x;
         input = GetComponent<PlayerInput>();
         rig = GetComponent<Rigidbody2D>();
         inventory = GetComponent<PlayerInventory>();
         inventory.Controller = this;
         totalEvilness = totalScore = 0;
         speedBonus = 0;
+        MaxEvil = maxEvilQuantity;
+
+        legs = GetComponentInChildren<LegAnimator>();
+        if (legs == null)
+        {
+            Debug.LogError("Player não tem pernas");
+        }
     }
 
     void OnEnable()
@@ -60,14 +69,13 @@ public class PlayerController : MonoBehaviour
 
     private void Interact ()
     {
+        if (inInventory) return;
         Vector2 interactionPoint = (Vector2)transform.position + GetMouseDir().normalized * interactionOffset;
         var hit = Physics2D.OverlapCircleAll(interactionPoint, interactionRadius, interactionLayer);
         foreach (var obj in hit)
         {
-            Debug.Log($"{obj.name} está na área de colisão de interação");
             if (obj.TryGetComponent(out IInteractable component))
             {
-                Debug.Log("Interagindo com objeto: " + obj.name);
                 component.Interact(this);
             }
             else
@@ -93,22 +101,59 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(SpeedBonusLoop(bonus, buffTime));
     }
 
-    private IEnumerator SpeedBonusLoop (float bonus, float buffTime)
+    private IEnumerator SpeedBonusLoop(float bonus, float buffTime)
     {
         yield return new WaitForSeconds(buffTime);
         speedBonus -= bonus;
         Debug.Log("Speed bonus encerrado. Velocidade atual igual a " + MoveSpeed);
     }
 
+    void Update()
+    {
+        if (inInventory)
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                inventory.Close();
+                inInventory = false;
+            }
+            return;
+        }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            inventory.Open();
+            inInventory = true;
+        }
+
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (inventory == null) return; 
+
+        if (scroll > 0f)
+        {
+            inventory.ScrollItem(-1);
+        }
+        else if (scroll < 0f)
+        {
+            inventory.ScrollItem(1);
+        }
+    }
+
     void FixedUpdate()
     {
+        if (inInventory) return;
         rig.linearVelocity = MoveSpeed * moveDir;
         Vector2 mouseDir = GetMouseDir();
+        
+        if (legs != null)
+        {
+            legs.SetMovementState(rig.linearVelocity.magnitude);
+        }
+        legs.SetMovementState(rig.linearVelocity.magnitude); 
 
-        if (mouseDir.x > 0)
-            transform.localScale = new Vector3(originalScaleX, transform.localScale.y, transform.localScale.z);
-        else if (mouseDir.x < 0)
-            transform.localScale = new Vector3(-originalScaleX, transform.localScale.y, transform.localScale.z);
+        float angle = Mathf.Atan2(mouseDir.y, mouseDir.x) * Mathf.Rad2Deg;
+        Quaternion targetRotation = Quaternion.Euler(new Vector3(0, 0, angle));
+        float rotationSpeed = 15f;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
     }
 
     void OnDrawGizmos()

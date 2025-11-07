@@ -7,7 +7,6 @@ public static class PathFinder
 
     public static bool TryFindPath(Node startNode, Node targetNode, out List<Vector3> path)
     {
-        Debug.Log("Recalculando rota");
         if (startNode == null || targetNode == null || !targetNode.isWalkable)
         {
             path = null;

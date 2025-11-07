@@ -25,9 +25,13 @@ public class Projectile : MonoBehaviour
         collisionSound = clip;
         transform.position = lastPosition = origin;
         rig = GetComponent<Rigidbody2D>();
+        col = GetComponent<Collider2D>();
+        rig.gravityScale = 0f;
         rig.linearDamping = 0f;
         accumulatedDistance = 0f;
         noiseRadius = nr;
+        
+        rig.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
 
     public void Shoot(Vector2 direction)
@@ -45,27 +49,36 @@ public class Projectile : MonoBehaviour
 
         foreach (var hit in hitNPCs)
         {
+            //Debug.Log($"Npc {hit.gameObject.name} na área do projétil {name}");
             if (hit.gameObject.TryGetComponent(out NpcIA npc))
             {
-                npc.HearDistraction(transform.position); 
+                npc.HearDistraction(transform.position);
+            }
+            else
+            {
+                Debug.LogWarning($"Npc {hit.gameObject.name} está na tag NPC mas não possui componente");
             }
         }
     }
 
     void FixedUpdate()
     {
-        if (!inMoviment) 
+        if (rig.linearVelocity == Vector2.zero) accumulatedDistance = 3 * maxDistance;
+        if (!inMoviment)
         {
             rig.linearVelocity = Vector2.zero;
             return;
         }
+        var rot = transform.rotation.eulerAngles;
+        rot.z *= 0.4f;
+        transform.rotation = Quaternion.Euler(rot);
         Vector2 deceleration = -rig.linearVelocity.normalized * decelerationRate;
         rig.AddForce(rig.mass * Time.fixedDeltaTime * deceleration, ForceMode2D.Force);
 
         if (rig.linearVelocity.sqrMagnitude < 0.01f)
         {
             rig.linearVelocity = Vector2.zero;
-            inMoviment = false; 
+            accumulatedDistance = 3 * maxDistance;
         }
 
         float distanceTraveledThisFrame = Vector2.Distance(lastPosition, transform.position);
@@ -91,7 +104,7 @@ public class Projectile : MonoBehaviour
 
         if (collisionSound != null) AudioSource.PlayClipAtPoint(collisionSound, transform.position);
         GenerateSoundAlert();
-        
+                
         if (!isCollidable)
         {
             inMoviment = false;
@@ -101,13 +114,6 @@ public class Projectile : MonoBehaviour
         else
         {
             lastPosition = collision.GetContact(0).point;
-            
-            Vector2 incomingDirection = rig.linearVelocity.normalized; 
-            Vector2 surfaceNormal = collision.GetContact(0).normal; 
-            Vector2 reflectedDirection = Vector2.Reflect(incomingDirection, surfaceNormal);
-
-            float bounceSpeed = rig.linearVelocity.magnitude * 0.85f; 
-            rig.linearVelocity = reflectedDirection * bounceSpeed;
         }
     }
 }

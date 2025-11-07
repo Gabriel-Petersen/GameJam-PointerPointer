@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8adf95f0d1be5042b655fc21dabd039, type: 3}
+  m_Name: Notebook
+  m_EditorClassIdentifier: 
+  causesSoundAlert: 1
+  soundAlertRadius: 5
+  soundAlert: {fileID: 0}
+  description: "\xC9 o PC Gamer dele?! N\xE3o... \xC9 um i3 furreca. Mas ao menos
+    \xE9 grana f\xE1cil."
+  itemName: Notebook
+  icon: {fileID: 21300000, guid: 61752aa39e0d78c4e99e293850639ef3, type: 3}
+  scoreValue: 150
+  evilness: 20
+  wheight: 5
