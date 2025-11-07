@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
   soundAlertRadius: 4
-  soundAlert: {fileID: 0}
+  soundAlert: {fileID: 8300000, guid: 93c342786b66d064c86f047d154b5789, type: 3}
   description: Essa joia parece rara... Deve valer uma grana legal.
   itemName: Joia Rara
   icon: {fileID: 21300000, guid: e56a97e22dfdcf5488db36703e850913, type: 3}

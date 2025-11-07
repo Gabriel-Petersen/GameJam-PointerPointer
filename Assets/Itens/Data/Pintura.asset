@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
   soundAlertRadius: 4
-  soundAlert: {fileID: 0}
-  description: "Uma pintura velha sem valor nenhum... Mas se eu tacar na cabe\xE7a
-    de algu\xE9m eu acho que derruba"
+  soundAlert: {fileID: 8300000, guid: 41a4c212c0e554645afe4b84edce8cfa, type: 3}
+  description: "Uma pintura velha sobre uma makita, sem valor nenhum... Mas se eu
+    tacar na cabe\xE7a de algu\xE9m eu acho que derruba"
   itemName: Pintura
   icon: {fileID: 21300000, guid: 892e6fe8213c8c24dbfbcd75f7fa02ad, type: 3}
   actionRadius: 0.6

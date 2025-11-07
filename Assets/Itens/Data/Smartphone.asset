@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
   soundAlertRadius: 4
-  soundAlert: {fileID: 0}
+  soundAlert: {fileID: 8300000, guid: 6fc8dd5af62201c40967362e17b09bfe, type: 3}
   description: Um celular acabado, achei que valia mais grana...
   itemName: Celular
   icon: {fileID: 21300000, guid: 2eb283998590c9f4b908252bd38f544e, type: 3}

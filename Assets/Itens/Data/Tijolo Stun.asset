@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
   soundAlertRadius: 3
-  soundAlert: {fileID: 0}
+  soundAlert: {fileID: 8300000, guid: e6a551436060ca3449ac6af55debc2e5, type: 3}
   description: "Um tijolo grande. Grande demais para aremessar. Por\xE9m se eu rumar
     na cabe\xE7a..."
   itemName: Tijolo pequeno

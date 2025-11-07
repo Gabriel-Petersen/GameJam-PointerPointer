@@ -27,6 +27,7 @@ public class NpcIA : MonoBehaviour
 
     [Header("General settings")]
     [SerializeField] private NpcState currentState;
+    [SerializeField] private LayerMask playerLayer;
     [SerializeField] private float attentionTime;
 
 
@@ -77,11 +78,6 @@ public class NpcIA : MonoBehaviour
             patrolPoints.Add(patrolPointParent.GetChild(c));
     }
 
-    void Reset()
-    {
-        player.enabled = true;
-    }
-
     void FixedUpdate()
     {
         Vector2 currentMoveDirection = rig.linearVelocity.normalized;
@@ -100,8 +96,8 @@ public class NpcIA : MonoBehaviour
                 break;
             case NpcState.CAPTURING:
                 Debug.Log("Capturou o jogador!");
-                player.enabled = false;
-                Invoke(nameof(Reset), 5f);
+                player.Die();
+                currentState = NpcState.PATROL;
                 break;
             case NpcState.STUNNED:
                 break;
@@ -175,6 +171,12 @@ public class NpcIA : MonoBehaviour
 
     private void HandleFollow()
     {
+        var hit = Physics2D.OverlapCircleAll((Vector2)transform.position + 0.3f*lookDirection.normalized, 0.3f, playerLayer);
+        if (hit != null)
+        {
+            currentState = NpcState.CAPTURING;
+            return;
+        }
         if (CanSeePlayer())
         {
             isDistractionFollow = false;

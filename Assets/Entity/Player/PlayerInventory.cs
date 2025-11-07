@@ -3,10 +3,11 @@ using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
 {
-    [SerializeField] private HudController hudController;
-    [SerializeField] private HotBarController hotBarController;
-    [SerializeField] private InventoryManager inventoryController;
-    public PlayerController Controller { private get; set; }
+    public HudController hudController;
+    public HotBarController hotBarController;
+    public InventoryManager inventoryController;
+    [SerializeField] private AudioClip throwSound;
+    public PlayerController Controller { get; set; }
     public readonly Dictionary<Item, ItemStack> inventory = new();
     public readonly List<InteractableItem> hotBar = new();
     [HideInInspector] public int hotBarIndex=0;
@@ -45,6 +46,7 @@ public class PlayerInventory : MonoBehaviour
     public void CatchItem (Item newItem)
     {
         //Debug.Log("Adquirindo item novo: " + newItem.itemName);
+        AudioSource.PlayClipAtPoint(throwSound, transform.position);
         newItem.PlaySound(Controller);
         if (inventory.ContainsKey(newItem))
         {
@@ -68,18 +70,20 @@ public class PlayerInventory : MonoBehaviour
         {
             var item = newItem as StaticItem;
             Controller.totalEvilness += item.evilness;
-            Controller.speedBonus -= item.wheight / 10.0f;
+            Controller.speedBonus -= item.wheight / 15.0f;
             Controller.totalScore += item.scoreValue;
         }
     }
 
     public void UseSelectedItem ()
     {
-        if (Controller.inInventory) return;
+        if (Controller.inInventory || !Controller.alive) return;
         if (CurrentItem == null) return; 
 
         if (CurrentItem.TryUseItem(Controller))
         {
+            AudioSource.PlayClipAtPoint(throwSound, transform.position);
+            Controller.animator.SetTrigger("throw");
             Item usedItem = CurrentItem;
             inventory[usedItem].RemoveItem(1);
 

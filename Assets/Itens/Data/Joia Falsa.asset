@@ -20,10 +20,10 @@ MonoBehaviour:
   itemName: Joia falsa
   icon: {fileID: 21300000, guid: 98309ffcb89cde44dbe1e42d74a82b8b, type: 3}
   shootOffset: 1
-  decelerationRate: 0.8
+  decelerationRate: 3
   isCollidable: 0
-  speed: 7
+  speed: 6
   maxDistance: 20
   prefab: {fileID: 7549439145250907604, guid: 34e93826c46fde945a0531832c5e1dfa, type: 3}
-  collisionSound: {fileID: 0}
+  collisionSound: {fileID: 8300000, guid: d98e794ec0555e8419563383985222d2, type: 3}
   noiseRadius: 10

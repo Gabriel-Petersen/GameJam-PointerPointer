@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -14,6 +15,7 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private Image descIcon;
     [SerializeField] private TextMeshProUGUI descItemName;
     [SerializeField] private TextMeshProUGUI descDescription;
+    [SerializeField] private Button discardButton;
     void Start()
     {
         inventory = FindAnyObjectByType<PlayerController>().inventory;
@@ -24,7 +26,7 @@ public class InventoryManager : MonoBehaviour
         foreach (var obj in inventory.inventory)
         {
             var newObj = Instantiate(prefab, gridParent);
-            newObj.SetupEntry(this, obj.Value);
+            newObj.SetupEntry(this, obj.Value, discardButton);
             itemgrid.Add(newObj);
             UpdateDescriptor(obj.Key);
         }
@@ -50,5 +52,16 @@ public class InventoryManager : MonoBehaviour
         descIcon.sprite = item.icon;
         descDescription.text = item.description;
         descItemName.text = item.itemName;
+    }
+
+    public void Discard(Item item)
+    {
+        inventory.inventory[item].RemoveItem(1);
+        var stItem = item as StaticItem;
+        if (stItem != null) inventory.Controller.speedBonus += stItem.wheight / 15.0f;
+        if (inventory.inventory[item].amount == 0) inventory.inventory.Remove(item);
+
+        CloseInventory();
+        Build();
     }
 }

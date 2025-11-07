@@ -408,8 +408,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentState: 0
   attentionTime: 2
-  visionRadius: 5
-  visionAngle: 110
+  visionRadius: 5.2
+  visionAngle: 92
   seeVision: 1
   obstacleMask:
     serializedVersion: 2

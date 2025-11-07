@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
   soundAlertRadius: 5
-  soundAlert: {fileID: 0}
+  soundAlert: {fileID: 8300000, guid: e38f86c8db141144f8ebcdda17721a67, type: 3}
   description: "\xC9 o PC Gamer dele?! N\xE3o... \xC9 um i3 furreca. Mas ao menos
     \xE9 grana f\xE1cil."
   itemName: Notebook

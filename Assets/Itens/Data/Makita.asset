@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
   soundAlertRadius: 15
-  soundAlert: {fileID: 0}
+  soundAlert: {fileID: 8300000, guid: da390fe7a0e81444a928e60341f15523, type: 3}
   description: "\xC9 ELA! EU T\xD4 NA MALDADE PRA ROUBAR A MAKITA"
   itemName: A MAKITA
   icon: {fileID: 21300000, guid: 7c1dff2dd05a97d4986e70d698c82752, type: 3}

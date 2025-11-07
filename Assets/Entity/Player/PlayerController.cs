@@ -1,19 +1,29 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(PlayerInventory))]
+[RequireComponent(typeof(Animator))]
 public class PlayerController : MonoBehaviour
 {
     private PlayerInput input;
+    private Vector2 startPosition;
+    public bool alive;
+    [HideInInspector] public Animator animator;
     private LegAnimator legs;
     [HideInInspector] public PlayerInventory inventory;
     private Rigidbody2D rig;
+    private WaitForSeconds decSecondWait;
 
     private Vector2 moveDir;
 
+    [SerializeField] private TextMeshProUGUI timerTxt;
+    [SerializeField] private float dieCooldown;
+    [SerializeField] private float gameTime;
     [SerializeField] private float baseMoveSpeed;
     [SerializeField] private float interactionRadius;
     [SerializeField] private float interactionOffset;
@@ -29,24 +39,64 @@ public class PlayerController : MonoBehaviour
     {
         get
         {
-            return Mathf.Max(0, baseMoveSpeed + speedBonus);
+            return Mathf.Max(0.5f, baseMoveSpeed + speedBonus);
         }
     }
+
+    [Space(10)]
+
+    [SerializeField] private GameObject endGameObj;
+    [SerializeField] private TextMeshProUGUI cashTxt;
+    [SerializeField] private TextMeshProUGUI evilTxt;
     void Awake()
     {
         input = GetComponent<PlayerInput>();
         rig = GetComponent<Rigidbody2D>();
         inventory = GetComponent<PlayerInventory>();
+        animator = GetComponent<Animator>();
         inventory.Controller = this;
         totalEvilness = totalScore = 0;
         speedBonus = 0;
         MaxEvil = maxEvilQuantity;
+        startPosition = transform.position;
+        alive = true;
+        decSecondWait = new WaitForSeconds(0.1f);
 
         legs = GetComponentInChildren<LegAnimator>();
         if (legs == null)
         {
             Debug.LogError("Player não tem pernas");
         }
+    }
+
+    void Start()
+    {
+        StartCoroutine(GameLoop());
+    }
+
+    private IEnumerator GameLoop()
+    {
+        float currentTime = gameTime;
+        while (currentTime > 0)
+        {
+            timerTxt.text = currentTime.ToString("F2") + "s";
+            currentTime -= 0.1f;
+            yield return decSecondWait;
+        }
+        alive = false;
+
+        inventory.hudController.gameObject.SetActive(false);
+        inventory.hotBarController.gameObject.SetActive(false);
+        inventory.inventoryController.gameObject.SetActive(false);
+        endGameObj.SetActive(true);
+        cashTxt.text = $"Dinheiro acumulado: {totalScore}";
+        float maldade = 100f * totalEvilness / MaxEvil;
+        evilTxt.text = $"Maldade total: {maldade}%";
+    }
+
+    public void ToMenu ()
+    {
+        SceneManager.LoadScene("Menu");
     }
 
     void OnEnable()
@@ -67,9 +117,10 @@ public class PlayerController : MonoBehaviour
         input.actions.Disable();
     }
 
-    private void Interact ()
+    private void Interact()
     {
-        if (inInventory) return;
+        if (inInventory || !alive) return;
+        animator.SetTrigger("catch");
         Vector2 interactionPoint = (Vector2)transform.position + GetMouseDir().normalized * interactionOffset;
         var hit = Physics2D.OverlapCircleAll(interactionPoint, interactionRadius, interactionLayer);
         foreach (var obj in hit)
@@ -84,6 +135,19 @@ public class PlayerController : MonoBehaviour
                 continue;
             }
         }
+    }
+
+    public void Die()
+    {
+        alive = false;
+        transform.position = startPosition;
+        rig.linearVelocity = Vector3.zero;
+        Invoke(nameof(ResetPlayer), dieCooldown);
+    }
+    
+    private void ResetPlayer()
+    {
+        alive = true;
     }
 
     public Vector2 GetMouseDir()
@@ -110,6 +174,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (!alive) return;
         if (inInventory)
         {
             if (Input.GetKeyDown(KeyCode.Q))
@@ -140,7 +205,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (inInventory) return;
+        if (inInventory || !alive) return;
         rig.linearVelocity = MoveSpeed * moveDir;
         Vector2 mouseDir = GetMouseDir();
         

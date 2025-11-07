@@ -19,10 +19,10 @@ MonoBehaviour:
   itemName: Tijolo Pequeno
   icon: {fileID: 21300000, guid: 3386294446a48f7408a06555b1bfc28a, type: 3}
   shootOffset: 1
-  decelerationRate: 0.4
+  decelerationRate: 4
   isCollidable: 0
   speed: 7
   maxDistance: 10
   prefab: {fileID: 7549439145250907604, guid: 7b76b26bda31783429c9aa267c26ec4b, type: 3}
-  collisionSound: {fileID: 0}
+  collisionSound: {fileID: 8300000, guid: e6a551436060ca3449ac6af55debc2e5, type: 3}
   noiseRadius: 10

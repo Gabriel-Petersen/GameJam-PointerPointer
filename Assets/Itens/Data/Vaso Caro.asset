@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Vaso Caro
   m_EditorClassIdentifier: 
   causesSoundAlert: 1
-  soundAlertRadius: 4
-  soundAlert: {fileID: 0}
+  soundAlertRadius: 6
+  soundAlert: {fileID: 8300000, guid: 90efbda2acc06cd4b82dade0986c2c9e, type: 3}
   description: Um vaso caro que deve valer muito dinheiro
   itemName: Vaso Caro
   icon: {fileID: 21300000, guid: 522ef0146573e6246952f9a55983a1eb, type: 3}
